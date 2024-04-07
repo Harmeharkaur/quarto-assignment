@@ -1,0 +1,165 @@
+---
+title: "<u><i>Examining Global Trends Throughout History & Geography Using UNICEF Data</i></u>"
+output:
+  quarto::quarto_html:
+    toc: true
+---
+
+<div style="text-align:center;">
+## Part I - Stunting Among Adolescent Girls
+</div>
+
+<style>
+  h1 {
+    text-align: center;
+  }
+
+  .orange-text {
+    color: orange;
+    font-family: Arial, sans-serif;
+    text-align: justify;
+
+  }
+</style>
+
+<span class="orange-text">In a world where data and various cultures converge, it becomes critical to comprehend global trends. Our exploration of "Stunting Among Adolescent Girls", a critical health indicator, reveals a temporal and geographic tale. Entering the depths of the UNICEF data set, we set out on an engrossing investigation of the difficulties encountered by teenage girls worldwide.</span>
+
+<div style="text-align: center">
+```{r, echo=FALSE}
+# Load required libraries
+library(ggplot2)
+library(maps)
+
+# Load data from the CSV file
+data <- read.csv("unicef_indicator_1.csv")
+
+# World Map Chart for Multiple Countries
+world_map_data <- map_data("world")
+
+# Create the plot with adjusted color range
+world_map <- ggplot() +
+  geom_map(data = world_map_data, map = world_map_data,
+           aes(map_id = region),
+           fill = "white", color = "black", linewidth = 0.1) +
+  geom_map(data = data, map = world_map_data,
+           aes(fill = obs_value, map_id = country),
+           color = "white", linewidth = 0.1) +
+  expand_limits(x = world_map_data$long, y = world_map_data$lat) +
+  scale_fill_gradient(name = "Prevalence",
+                      low = "lightblue", high = "darkblue",
+                      limits = c(0, 30),
+                      breaks = c(0, 5, 10, 20, 30)) + 
+  labs(title = "Stunting Among Adolescent Girls Globally",
+       caption = "Source: UNICEF") +
+  theme_void() +
+  theme(plot.title = element_text(color = "darkblue", size = 13, hjust = 0.75)) 
+
+# Display the world map
+print(world_map)
+```
+</div>
+
+<span style="color: darkblue;">The first chapter of our story opens. It displays the color-coded maps which clearly show the regional differences in the frequency of stunting among teenage girls over time. Variations in observation value create a moving portrait of the areas facing this health issue. The map depicts the differences and similarities in the global fight against stunting.</span>
+
+
+<div style="text-align: center">
+```{r, echo=FALSE}
+# Load required libraries
+library(ggplot2)
+library(broom)
+
+# Load data from the CSV file
+data <- read.csv("unicef_indicator_1.csv")
+
+# Fit linear regression model
+lm_model <- lm(obs_value ~ time_period, data = data)
+lm_data <- augment(lm_model)
+
+# scatter plot with Linear Regression Line
+scatterplot <- ggplot(data, aes(x = time_period, y = obs_value)) +
+  geom_point() +  # Add points for each data point
+  geom_line(data = lm_data, aes(y = .fitted), color = "red") +
+  labs(title = "Relationship Between Time Period and Stunting Prevalence",
+       x = "Time Period", y = "Stunting Prevalence",
+       caption = "Source: UNICEF") +
+  theme(legend.position = "none",
+        plot.title = element_text(color = "red", hjust = 0.5)) # Set title color to red and center align
+
+# Display the scatter plot
+print(scatterplot)
+
+```
+</div>
+
+<span style="color: red;">Moving into the second chapter, we use scatter plots to investigate how variables are related to one another. Every dot on the graph represents a nation, and its placement indicates the relationship between the prevalence of stunting and variables including time period. The scatter plots reveal hidden narrative and provide insights into the intricate network of variables affecting teenage girl's health around the world. </span>
+
+<div style="text-align:center;">
+## Part II - Careseeking for Febrile Children
+</div>
+
+<span class="orange-text">In a landscape where healthcare disparities abound, it's imperative to dissect global phenomena. Our scrutiny of "Careseeking for Febrile Children" illuminates a story woven with temporal and geographic threads. Navigating the intricate layers of healthcare data, particularly from sources like UNICEF, we embark on a poignant journey to understand the complexities surrounding the seeking of care for children with fevers across different cultures and regions.</span>
+
+<div style="text-align: center">
+```{r, echo=FALSE}
+# Load required library
+library(ggplot2)
+
+# Load data from the CSV file
+data <- read.csv("unicef_indicator_2.csv")
+
+# Convert time_period to a Date format (assuming time_period is in year format)
+data$time_period <- as.Date(paste0(data$time_period, "-01-01"))
+
+# Filter data for Male and Female observations
+male_female_data <- subset(data, sex %in% c("Female", "Male"))
+
+# Time-Series Chart for Male and Female Stunting Prevalence
+time_series_chart_male_female <- ggplot(male_female_data, aes(x = time_period, y = obs_value, color = sex)) +
+  geom_line() +  # Add a line connecting the data points
+  labs(title = "Careseeking for febrile children",
+       x = "Time Period", y = "Stunting Prevalence (%)",
+       color = "Sex",
+       caption = "Source: UNICEF") +
+  theme(plot.title = element_text(color = "darkgreen", hjust = 0.5))  
+
+# Display the time-series chart for male and female stunting prevalence
+print(time_series_chart_male_female)
+```
+</div>
+
+<span style="color: darkgreen;"> Transitioning to our third chapter, we pivot to time-series charts, unraveling the evolving narrative of stunting prevalence. Each line on the chart represents a gender group, painting a vivid picture of how stunting prevalence fluctuates over time. With titles adorned in dark green, these charts beckon us to decode their story, offering insights into shifting health dynamics and care-seeking behaviors. It's a concise yet compelling journey through the temporal landscape of health disparities and societal trends.
+ </span>
+
+<div style="text-align: center">
+```{r, echo=FALSE}
+# Load required libraries
+library(ggplot2)
+
+# Calculate average percentage for each country
+average_percentage <- aggregate(obs_value ~ country, data = data, FUN = mean)
+
+# Sort the data by average percentage values in descending order
+sorted_data <- average_percentage[order(-average_percentage$obs_value), ]
+
+# Select only the top 10 countries
+top_10_countries <- head(sorted_data, 10)
+
+# Plot bar chart with annotations
+ggplot(top_10_countries, aes(x = reorder(country, obs_value), y = obs_value)) +
+  geom_bar(stat = "identity", fill = "brown") +
+  geom_text(aes(label = round(obs_value, 1)), vjust = -0.5, size = 3.5, color = "black") +  # Add text annotations
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(color = "brown", hjust = 0.5)) +  # Set title color and alignment
+  labs(title = "Top 10 Countries by Average Percentage of Children Seeking Care for Frebile",
+       x = "Country",
+       y = "Average Percentage")
+```
+</div>
+
+<span style="color: brown;">Going into a final chapter, we pivot to bar charts to unveil the top 10 countries in terms of the average percentage of children seeking care for febrile illnesses. Each bar represents a country, sorted in descending order by their average percentages. With brown hues dominating the titles, these charts beckon us to explore the disparities and successes in child healthcare across nations. It's a concise glimpse into the global landscape of pediatric care, offering insights into regions excelling in this crucial aspect of child welfare. </span>
+
+<div style="text-align:center;">
+## Conclusion
+</div>
+
+<span class="orange-text">Our exploration of analyzing worldwide trends in teenage stunting and care seeking for febrile children - percentage of children (under age 5) with fever for whom advice or treatment was sought from a health facility or provider reveals a story marked by obstacles, resiliency, and the possibility of improvement. We obtain a thorough grasp of the complex nature of this worldwide issue as we move around using maps, time-series analysis, and scatter plots. We enable ourselves to contribute to a future where every one can thrive, by using data-driven insights</span>
